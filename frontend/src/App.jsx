@@ -118,8 +118,15 @@ function App() {
           <Routes>
             <Route path="/overview" element={<DashboardOverview tenantId={activeTenant} />} />
             <Route path="/adoption" element={<ComingSoon title="Feature Tracker" description="This module is under construction. It will display deeper metric tracking natively bound to the selected organizational context." />} />
-            <Route path="/compliance" element={<ComplianceHub tenantId={activeTenant} />} />
-            <Route path="/settings" element={<ComingSoon title="System Settings" description="General system configuration options for managing Enterprise SSO, Roles, and License boundaries." />} />
+            
+            {/* Protected Routes */}
+            <Route path="/compliance" element={
+              activeRole === 'Admin' ? <ComplianceHub tenantId={activeTenant} /> : <Navigate to="/overview" replace />
+            } />
+            <Route path="/settings" element={
+              activeRole === 'Admin' ? <ComingSoon title="System Settings" description="General system configuration options for managing Enterprise SSO, Roles, and License boundaries." /> : <Navigate to="/overview" replace />
+            } />
+            
             {/* Fallbacks */}
             <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>
