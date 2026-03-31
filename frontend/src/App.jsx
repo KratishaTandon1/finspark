@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Shield, BarChart3, Settings, Database, Building } from 'lucide-react';
+import { LayoutDashboard, Shield, BarChart3, Settings, Database, Building, Menu, X } from 'lucide-react';
 import DashboardOverview from './pages/DashboardOverview';
 import ComplianceHub from './pages/ComplianceHub';
 import ComingSoon from './pages/ComingSoon';
@@ -8,6 +8,7 @@ import { telemetry } from './sdk/finspark-telemetry';
 
 function App() {
   const [activeTenant, setActiveTenant] = useState(telemetry.tenantId);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const switchTenant = (e) => {
     const newTenantId = e.target.value;
@@ -19,8 +20,24 @@ function App() {
   return (
     <BrowserRouter>
       <div className="app-container">
+        {/* Mobile Header */}
+        <div className="mobile-header">
+          <div className="sidebar-logo" style={{ fontSize: '1.25rem' }}>
+            <Database className="w-6 h-6 text-blue-500" />
+            FinSpark
+          </div>
+          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X className="w-6 h-6 text-slate-300" /> : <Menu className="w-6 h-6 text-slate-300" />}
+          </button>
+        </div>
+
+        {/* Mobile Overlay Backdrop */}
+        {isMobileMenuOpen && (
+          <div className="mobile-sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+        )}
+
         {/* Sidebar */}
-        <nav className="sidebar">
+        <nav className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="sidebar-logo">
             <Database className="w-8 h-8 text-blue-500" />
             FinSpark
@@ -48,11 +65,11 @@ function App() {
           </div>
           <div className="nav-menu">
             {/* Note the updated data-feature attribute for hierarchical taxonomy schema */}
-            <NavLink to="/overview" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Dashboard:Navigation:Overview">
+            <NavLink to="/overview" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Dashboard:Navigation:Overview" onClick={() => setIsMobileMenuOpen(false)}>
               <LayoutDashboard className="w-5 h-5" />
               Overview
             </NavLink>
-            <NavLink to="/adoption" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Dashboard:Navigation:Adoption">
+            <NavLink to="/adoption" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Dashboard:Navigation:Adoption" onClick={() => setIsMobileMenuOpen(false)}>
               <BarChart3 className="w-5 h-5" />
               Feature Tracker
             </NavLink>
@@ -62,11 +79,11 @@ function App() {
             Governance & Settings
           </div>
           <div className="nav-menu">
-            <NavLink to="/compliance" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:ComplianceHub">
+            <NavLink to="/compliance" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:ComplianceHub" onClick={() => setIsMobileMenuOpen(false)}>
               <Shield className="w-5 h-5" />
               Compliance Hub
             </NavLink>
-            <NavLink to="/settings" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:SystemSettings">
+            <NavLink to="/settings" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:SystemSettings" onClick={() => setIsMobileMenuOpen(false)}>
               <Settings className="w-5 h-5" />
               System Settings
             </NavLink>
