@@ -51,6 +51,30 @@ export default function DashboardOverview({ tenantId }) {
         </div>
       </div>
 
+      {/* License Utilization Context */}
+      {data.kpis.licensedSeats && (
+        <div className="glass-card" style={{ marginBottom: '2rem' }} data-feature="Dashboard:KPI:LicenseUtilization">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.75rem' }}>
+            <div>
+              <h2 className="card-title" style={{ margin: 0 }}>License Utilization ROI</h2>
+              <p className="text-muted" style={{ fontSize: '0.875rem' }}>Active Users vs Procured Enterprise Seats</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
+                  {Math.round((data.kpis.activeUsers / data.kpis.licensedSeats) * 100)}%
+              </div>
+            </div>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+             <div style={{ width: `${Math.round((data.kpis.activeUsers / data.kpis.licensedSeats) * 100)}%`, height: '100%', background: 'var(--success)' }}></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+             <span>{data.kpis.activeUsers.toLocaleString()} Active</span>
+             <span>{data.kpis.licensedSeats.toLocaleString()} Purchased</span>
+          </div>
+        </div>
+      )}
+
       {/* Predictive Strategic Intelligence UI Section */}
       {(() => {
          // Dynamic Predictive Logic (Feature trigger based on usage count)

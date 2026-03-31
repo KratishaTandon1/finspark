@@ -9,6 +9,7 @@ import { telemetry } from './sdk/finspark-telemetry';
 function App() {
   const [activeTenant, setActiveTenant] = useState(telemetry.tenantId);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeRole, setActiveRole] = useState('Admin');
 
   const switchTenant = (e) => {
     const newTenantId = e.target.value;
@@ -60,6 +61,24 @@ function App() {
              </div>
           </div>
 
+          {/* PERSONA SIMULATOR */}
+          <div className="mt-4 mb-2 px-1">
+            <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2" data-feature="Sidebar:RoleSegregation">
+               Role Persona
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px' }}>
+               <Shield className="w-4 h-4 text-purple-400" />
+               <select 
+                 value={activeRole} 
+                 onChange={(e) => setActiveRole(e.target.value)}
+                 style={{ background: 'transparent', color: 'var(--text-main)', border: 'none', outline: 'none', width: '100%', cursor: 'pointer', fontSize: '0.875rem' }}
+               >
+                 <option value="Admin" style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>Platform Admin</option>
+                 <option value="User" style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>Standard User</option>
+               </select>
+            </div>
+          </div>
+
           <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2 mt-4 px-3">
             Analytics & Intelligence
           </div>
@@ -75,19 +94,23 @@ function App() {
             </NavLink>
           </div>
           
-          <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2 mt-4 px-3">
-            Governance & Settings
-          </div>
-          <div className="nav-menu">
-            <NavLink to="/compliance" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:ComplianceHub" onClick={() => setIsMobileMenuOpen(false)}>
-              <Shield className="w-5 h-5" />
-              Compliance Hub
-            </NavLink>
-            <NavLink to="/settings" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:SystemSettings" onClick={() => setIsMobileMenuOpen(false)}>
-              <Settings className="w-5 h-5" />
-              System Settings
-            </NavLink>
-          </div>
+          {activeRole === 'Admin' && (
+            <>
+              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2 mt-4 px-3" data-feature="Sidebar:GovernanceVisibility">
+                Governance & Settings
+              </div>
+              <div className="nav-menu">
+                <NavLink to="/compliance" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:ComplianceHub" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Shield className="w-5 h-5" />
+                  Compliance Hub
+                </NavLink>
+                <NavLink to="/settings" className={({isActive}) => isActive ? "nav-link active" : "nav-link"} data-feature="Governance:Navigation:SystemSettings" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Settings className="w-5 h-5" />
+                  System Settings
+                </NavLink>
+              </div>
+            </>
+          )}
         </nav>
 
         {/* Main Content Area */}

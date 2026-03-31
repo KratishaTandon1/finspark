@@ -4,6 +4,7 @@
       "kpis": {
         "totalEvents": 145000,
         "activeUsers": 8400,
+        "licensedSeats": 10000,
         "anonymizedPercent": 99.8
       },
       "featureAdoption": [
@@ -61,6 +62,7 @@
       "kpis": {
         "totalEvents": 52000,
         "activeUsers": 2100,
+        "licensedSeats": 5000,
         "anonymizedPercent": 94.2
       },
       "featureAdoption": [

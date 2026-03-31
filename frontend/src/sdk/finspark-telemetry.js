@@ -7,6 +7,7 @@ class FinSparkTelemetry {
     this.tenantId = localStorage.getItem('finspark_tenant_id') || "TENANT_HDFC"; 
     
     this.userId = "usr_" + Math.floor(Math.random() * 1000);
+    this.journeySessionId = "sess_" + Math.random().toString(36).substr(2, 9);
     this.consentReceived = true; 
     
     // Batching (Circuit Breaker) Queue
@@ -76,6 +77,7 @@ class FinSparkTelemetry {
 
     const payload = {
       eventId: "evt_" + Math.random().toString(36).substr(2, 9),
+      journeySessionId: this.journeySessionId,
       timestamp: new Date().toISOString(),
       eventName,
       userId: this.userId,
