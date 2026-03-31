@@ -15,10 +15,11 @@ export default function ComplianceHub({ tenantId }) {
     // We must pass the DB Segregation header for the V2 backend
     const headers = { 'x-tenant-id': tenantId };
 
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
     Promise.all([
-      fetch('http://localhost:3001/api/compliance/consent', { headers }).then(r => r.json()),
-      fetch('http://localhost:3001/api/compliance/pii-rules', { headers }).then(r => r.json()),
-      fetch('http://localhost:3001/api/compliance/audit-logs', { headers }).then(r => r.json())
+      fetch(`${API_BASE_URL}/api/compliance/consent`, { headers }).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/compliance/pii-rules`, { headers }).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/compliance/audit-logs`, { headers }).then(r => r.json())
     ]).then(([consentData, piiData, logsData]) => {
       if (consentData.error || piiData.error || logsData.error) {
          setError("Backend Multi-Tenancy Firewall rejected the request. Missing tenant context.");
