@@ -55,7 +55,7 @@ const requireTenant = (req, res, next) => {
 
 // --- ENDPOINTS ---
 
-app.get('/api/analytics', requireTenant, (req, res) => {
+app.get('/api/dashboard-data', requireTenant, (req, res) => {
   // DB query isolated to the tenant schema assigned in middleware
   res.json(req.tenantContext); 
 });
@@ -74,7 +74,7 @@ app.get('/api/compliance/audit-logs', requireTenant, (req, res) => {
 });
 
 // Telemetry Batch Ingestion Endpoint (Circuit-Breaker Target)
-app.post('/api/telemetry', requireTenant, (req, res) => {
+app.post('/api/ingest', requireTenant, (req, res) => {
   const { events } = req.body;
   const tenantId = req.headers['x-tenant-id'];
 

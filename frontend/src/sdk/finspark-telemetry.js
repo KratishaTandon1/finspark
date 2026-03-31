@@ -1,7 +1,7 @@
 class FinSparkTelemetry {
   constructor() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-    this.endpoint = `${API_BASE_URL}/api/telemetry`;
+    this.endpoint = `${API_BASE_URL}/api/ingest`;
     this.deploymentType = "on-premise"; // Simulating on-prem behavior with local sync
     // Default tenant; we will allow the UI to override this for presentation purposes
     this.tenantId = localStorage.getItem('finspark_tenant_id') || "TENANT_HDFC"; 
