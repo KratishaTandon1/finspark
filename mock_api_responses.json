@@ -1,0 +1,234 @@
+{
+  "dbCluster": {
+    "TENANT_HDFC": {
+      "kpis": {
+        "totalEvents": 145000,
+        "activeUsers": 8400,
+        "anonymizedPercent": 99.8
+      },
+      "featureAdoption": [
+        {
+          "feature": "Core Banking API",
+          "cloud": 90,
+          "onPrem": 40
+        },
+        {
+          "feature": "Loan Origination UI",
+          "cloud": 60,
+          "onPrem": 85
+        },
+        {
+          "feature": "Fraud Alerts",
+          "cloud": 70,
+          "onPrem": 60
+        },
+        {
+          "feature": "Audit Export",
+          "cloud": 95,
+          "onPrem": 95
+        }
+      ],
+      "journeyFunnel": [
+        {
+          "step": "App we open",
+          "users": 400
+        },
+        {
+          "step": "Dashboard Load",
+          "users": 8200
+        },
+        {
+          "step": "Module Nav",
+          "users": 6500
+        },
+        {
+          "step": "Form Submit",
+          "users": 3000
+        }
+      ],
+      "predictiveInsights": [
+        {
+          "type": "warning",
+          "message": "Usage of 'Core Banking API' dropped 40% in On-Prem cluster. High risk of license non-renewal."
+        },
+        {
+          "type": "success",
+          "message": "Loan Origination UI adoption targets historically predict a 20% upsell next quarter."
+        }
+      ]
+    },
+    "TENANT_ICICI": {
+      "kpis": {
+        "totalEvents": 52000,
+        "activeUsers": 2100,
+        "anonymizedPercent": 94.2
+      },
+      "featureAdoption": [
+        {
+          "feature": "Retail",
+          "cloud": 75,
+          "onPrem": 20
+        },
+        {
+          "feature": "Wealth Dashboard",
+          "cloud": 40,
+          "onPrem": 30
+        },
+        {
+          "feature": "Tx Search",
+          "cloud": 88,
+          "onPrem": 80
+        }
+      ],
+      "journeyFunnel": [
+        {
+          "step": "App we open",
+          "users": 3400
+        },
+        {
+          "step": "Wealth View",
+          "users": 1500
+        },
+        {
+          "step": "Portfolio Refresh",
+          "users": 800
+        },
+        {
+          "step": "Export PDF",
+          "users": 200
+        }
+      ],
+      "predictiveInsights": [
+        {
+          "type": "danger",
+          "message": "Wealth Dashboard usage remains stagnant. Consider deploying targeted training materials."
+        }
+      ]
+    }
+  },
+  "consent_settings": {
+    "tenantId": "org_7890_fin_corp",
+    "deploymentType": "cloud",
+    "globalTelemetryEnabled": true,
+    "consentMechanisms": {
+      "mandatory": [
+        "security_events",
+        "system_performance"
+      ],
+      "optional": [
+        "feature_usage",
+        "journey_tracking",
+        "ui_interactions"
+      ]
+    },
+    "userPreferences": [
+      {
+        "userId": "usr_101",
+        "optedInEvents": [
+          "feature_usage",
+          "journey_tracking"
+        ],
+        "lastUpdated": "2026-03-31T10:00:00Z"
+      },
+      {
+        "userId": "usr_102",
+        "optedInEvents": [],
+        "lastUpdated": "2026-03-31T10:05:00Z"
+      }
+    ]
+  },
+  "pii_masking_rules": {
+    "tenantId": "org_7890_fin_corp",
+    "active": true,
+    "maskingStrategy": "SHA-256-Hashing",
+    "rules": [
+      {
+        "field": "customerName",
+        "action": "mask_full"
+      },
+      {
+        "field": "accountNumber",
+        "action": "mask_partial",
+        "visibleLastChars": 4
+      },
+      {
+        "field": "emailAddress",
+        "action": "hash"
+      },
+      {
+        "field": "ipAddress",
+        "action": "anonymize_subnet",
+        "subnetPrefix": 24
+      }
+    ]
+  },
+  "telemetry_audit_logs": {
+    "page": 1,
+    "pageSize": 50,
+    "totalRecords": 1024,
+    "logs": [
+      {
+        "auditId": "adt_abc123",
+        "timestamp": "2026-03-31T09:15:22Z",
+        "actorId": "admin_usr_001",
+        "actorRole": "Tenant_Admin",
+        "action": "UPDATE_CONSENT_SETTINGS",
+        "details": {
+          "previousState": {
+            "globalTelemetryEnabled": false
+          },
+          "newState": {
+            "globalTelemetryEnabled": true
+          }
+        },
+        "ipAddress": "192.168.1.55"
+      },
+      {
+        "auditId": "adt_abc124",
+        "timestamp": "2026-03-30T14:22:11Z",
+        "actorId": "sys_compliance_bot",
+        "actorRole": "System",
+        "action": "APPLY_PII_MASKING_POLICY",
+        "details": {
+          "policyVersion": "v1.4",
+          "affectedFields": [
+            "emailAddress",
+            "accountNumber"
+          ]
+        },
+        "ipAddress": "127.0.0.1"
+      }
+    ]
+  },
+  "dashboard_role_access": {
+    "userId": "admin_usr_001",
+    "assignedRoles": [
+      "Product_Manager",
+      "Compliance_Officer"
+    ],
+    "permissions": {
+      "dashboards": [
+        {
+          "dashboardId": "dash_feature_adoption",
+          "accessLevel": "READ_WRITE",
+          "dataScope": "All_Tenants"
+        },
+        {
+          "dashboardId": "dash_journey_funnel",
+          "accessLevel": "READ",
+          "dataScope": "All_Tenants"
+        },
+        {
+          "dashboardId": "dash_compliance_audit",
+          "accessLevel": "READ",
+          "dataScope": "Tenant_Specific"
+        }
+      ],
+      "actions": [
+        "export_anonymized_data",
+        "view_roi_metrics",
+        "manage_pii_rules"
+      ]
+    }
+  }
+}
