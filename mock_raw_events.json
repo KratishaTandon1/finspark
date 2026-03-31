@@ -1,0 +1,23 @@
+[
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_101", "channel": "web", "timestamp": "2026-04-01T10:00:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_101", "channel": "web", "timestamp": "2026-04-01T10:05:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "TxSearch", "userId": "user_102", "channel": "mobile", "timestamp": "2026-04-01T10:10:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_103", "channel": "api", "timestamp": "2026-04-01T10:15:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "TxSearch", "userId": "user_101", "channel": "web", "timestamp": "2026-04-01T10:20:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "WealthDashboard", "userId": "user_104", "channel": "mobile", "timestamp": "2026-04-01T10:25:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "TxSearch", "userId": "user_105", "channel": "api", "timestamp": "2026-04-01T10:30:00Z" },
+  { "tenantId": "TENANT_ICICI", "featureId": "RetailUI", "userId": "user_901", "channel": "web", "timestamp": "2026-04-01T10:05:00Z" },
+  { "tenantId": "TENANT_ICICI", "featureId": "RetailUI", "userId": "user_902", "channel": "mobile", "timestamp": "2026-04-01T10:10:00Z" },
+  { "tenantId": "TENANT_ICICI", "featureId": "WealthDashboard", "userId": "user_901", "channel": "web", "timestamp": "2026-04-01T10:15:00Z" },
+  { "tenantId": "TENANT_ICICI", "featureId": "TxSearch", "userId": "user_903", "channel": "mobile", "timestamp": "2026-04-01T10:20:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_106", "channel": "web", "timestamp": "2026-04-01T10:35:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_107", "channel": "mobile", "timestamp": "2026-04-01T10:40:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_108", "channel": "web", "timestamp": "2026-04-01T10:45:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "TxSearch", "userId": "user_109", "channel": "api", "timestamp": "2026-04-01T10:50:00Z" },
+  { "tenantId": "TENANT_ICICI", "featureId": "TxSearch", "userId": "user_904", "channel": "mobile", "timestamp": "2026-04-01T10:25:00Z" },
+  { "tenantId": "TENANT_ICICI", "featureId": "RetailUI", "userId": "user_905", "channel": "web", "timestamp": "2026-04-01T10:30:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "WealthDashboard", "userId": "user_110", "channel": "web", "timestamp": "2026-04-01T10:55:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_111", "channel": "mobile", "timestamp": "2026-04-01T11:00:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_112", "channel": "web", "timestamp": "2026-04-01T11:05:00Z" },
+  { "tenantId": "TENANT_HDFC", "featureId": "ApplyLoan", "userId": "user_102", "channel": "web", "timestamp": "2026-04-01T11:10:00Z" }
+]
