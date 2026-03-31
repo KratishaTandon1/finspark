@@ -8,7 +8,7 @@ app.use(cors());
 // Increased limit for grouped event batches
 app.use(express.json({ limit: '10mb' }));
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Load mock responses
 const mockDataPath = path.join(__dirname, '..', 'mock_api_responses.json');

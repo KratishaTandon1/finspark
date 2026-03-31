@@ -11,8 +11,9 @@ export default function DashboardOverview({ tenantId }) {
   });
 
   useEffect(() => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
     // Making sure the fetch includes strict DB segregation identifier
-    fetch('http://localhost:3001/api/analytics', {
+    fetch(`${API_BASE_URL}/api/analytics`, {
        headers: {
            'x-tenant-id': tenantId
        }
