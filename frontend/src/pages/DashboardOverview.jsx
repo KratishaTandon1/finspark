@@ -41,9 +41,8 @@ export default function DashboardOverview({ tenantId }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetch('http://localhost:3001/api/analytics', {
-      headers: { 'x-tenant-id': tenantId }
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
     // Making sure the fetch includes strict DB segregation identifier
     fetch(`${API_BASE_URL}/api/dashboard-data`, {
@@ -66,7 +65,7 @@ export default function DashboardOverview({ tenantId }) {
     </div>
   );
 
-  const { kpis, featureAdoption, journeyFunnel, channelBreakdown, dailyTrend, licenseGap, predictiveInsights } = data;
+  const { kpis, featureAdoption, journeyFunnel, channelBreakdown, dailyTrend, licenseGap } = data;
 
   // Utilization color
   const utilizationColor = licenseGap?.utilizationPercent >= 70 ? '#10b981'
@@ -140,6 +139,13 @@ export default function DashboardOverview({ tenantId }) {
                     background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
                     color: '#ef4444', borderRadius: '999px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 600
                   }}>{f}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* License Utilization Context */}
       {data.kpis.licensedSeats && (
         <div className="glass-card" style={{ marginBottom: '2rem' }} data-feature="Dashboard:KPI:LicenseUtilization">
@@ -166,7 +172,6 @@ export default function DashboardOverview({ tenantId }) {
 
       {/* Predictive Strategic Intelligence UI Section */}
       {(() => {
-         // Dynamic Predictive Logic (Feature trigger based on usage count)
          const threshold = 100000;
          const usageCount = data.kpis ? data.kpis.totalEvents : 0;
          const dynamicInsights = [];
@@ -182,57 +187,19 @@ export default function DashboardOverview({ tenantId }) {
          if (allInsights.length === 0) return null;
 
          return (
-          <div className="glass-card page-header" style={{ borderColor: 'var(--accent-secondary)' }} data-feature="Dashboard:Component:StrategicInsights">
+          <div className="glass-card" style={{ marginBottom: '2rem', borderColor: 'var(--accent-secondary)' }} data-feature="Dashboard:Component:StrategicInsights">
              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
                 <Sparkles className="text-purple-400" />
-                <h2 className="card-title" style={{ margin: 0, background: 'linear-gradient(90deg, #c084fc, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Strategic Intelligence Engine</h2>
+                <h2 className="card-title" style={{ margin: 0, background: 'linear-gradient(90deg, #c084fc, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Strategic Intelligence Engine
+                </h2>
              </div>
-             
              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {allInsights.map((insight, idx) => (
-                    <div key={idx} style={{ 
-                        padding: '1rem', 
-                        borderRadius: '8px', 
-                        background: 'rgba(0,0,0,0.3)',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '1rem',
-                        borderLeft: `4px solid ${insight.type === 'danger' ? 'var(--danger)' : insight.type === 'success' ? 'var(--success)' : insight.type === 'warning' ? 'var(--warning)' : 'var(--accent-primary)'}` 
-                    }}>
-                        {insight.type === 'danger' && <AlertTriangle className="text-red-500 w-5 h-5 flex-shrink-0" />}
-                        {insight.type === 'warning' && <AlertTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />}
-                        {insight.type === 'success' && <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0" />}
-                        {insight.type === 'info' && <Info className="text-blue-500 w-5 h-5 flex-shrink-0" />}
-                        
-                        <div style={{ color: "var(--text-main)", fontSize: "0.95rem", lineHeight: "1.4" }}>
-                            {insight.message}
-                        </div>
-                    </div>
-                ))}
-              </div>
-            )}
+                {allInsights.map((insight, idx) => <InsightRow key={idx} insight={insight} />)}
+             </div>
           </div>
-        </div>
-      )}
-
-      {/* ── Predictive Insights ───────────────────────────────────────────────── */}
-      {predictiveInsights?.length > 0 && (
-        <div className="glass-card" style={{ marginBottom: '2rem', borderColor: 'var(--accent-secondary)' }} data-feature="Dashboard:Component:StrategicInsights">
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
-            <Sparkles className="text-purple-400" />
-            <h2 className="card-title" style={{
-              margin: 0,
-              background: 'linear-gradient(90deg, #c084fc, #818cf8)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-            }}>
-              Strategic Intelligence Engine
-            </h2>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {predictiveInsights.map((insight, idx) => <InsightRow key={idx} insight={insight} />)}
-          </div>
-        </div>
-      )}
+         );
+      })()}
 
       {/* ── Row 1: Feature Adoption + Journey Funnel ─────────────────────────── */}
       <div className="grid-2" style={{ marginBottom: '2rem' }}>

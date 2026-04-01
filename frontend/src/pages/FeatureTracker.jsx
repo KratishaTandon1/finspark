@@ -108,6 +108,7 @@ export default function FeatureTracker({ tenantId }) {
   const [filter, setFilter]     = useState('all'); // all | hot | warm | cold | unused
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch('http://localhost:3001/api/features', {
       headers: { 'x-tenant-id': tenantId }

@@ -3,7 +3,6 @@ import { ShieldAlert, ShieldCheck, Activity } from 'lucide-react';
 import { telemetry } from '../sdk/finspark-telemetry';
 
 export default function ComplianceHub({ tenantId }) {
-  const [consent, setConsent] = useState(null);
   const [piiRules, setPiiRules] = useState(null);
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState(null);
@@ -25,7 +24,6 @@ export default function ComplianceHub({ tenantId }) {
          setError("Backend Multi-Tenancy Firewall rejected the request. Missing tenant context.");
          return;
       }
-      setConsent(consentData);
       setGlobalConsent(consentData.globalTelemetryEnabled);
       setPiiRules(piiData);
       setLogs(logsData.logs || []);
