@@ -1,12 +1,13 @@
 class FinSparkTelemetry {
   constructor() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-    this.endpoint = `${API_BASE_URL}/api/telemetry`;
+    this.endpoint = `${API_BASE_URL}/api/ingest`;
     this.deploymentType = "on-premise"; // Simulating on-prem behavior with local sync
     // Default tenant; we will allow the UI to override this for presentation purposes
     this.tenantId = localStorage.getItem('finspark_tenant_id') || "TENANT_HDFC"; 
     
     this.userId = "usr_" + Math.floor(Math.random() * 1000);
+    this.journeySessionId = "sess_" + Math.random().toString(36).substr(2, 9);
     this.consentReceived = true; 
     
     // Batching (Circuit Breaker) Queue
@@ -76,6 +77,7 @@ class FinSparkTelemetry {
 
     const payload = {
       eventId: "evt_" + Math.random().toString(36).substr(2, 9),
+      journeySessionId: this.journeySessionId,
       timestamp: new Date().toISOString(),
       eventName,
       userId: this.userId,

@@ -40,6 +40,28 @@ loadFiles();
     if (curr.mtime > prev.mtime) {
       console.log(`\n[HOT-RELOAD] Detected change in ${path.basename(filePath)}, reloading...`);
       loadFiles();
+let dbCluster = mockData.dbCluster || {};
+
+// Load Raw Events for Dynamic Aggregation
+const rawEventsPath = path.join(__dirname, '..', 'mock_raw_events.json');
+let rawEvents = [];
+try {
+  rawEvents = JSON.parse(fs.readFileSync(rawEventsPath, 'utf8'));
+} catch (e) {
+  console.error("Could not load mock_raw_events.json", e);
+}
+
+// --- HOT RELOAD LOGIC ---
+// Watch for file changes so the Mock API updates immediately without server restarts
+fs.watchFile(mockDataPath, { interval: 500 }, (curr, prev) => {
+  if (curr.mtime > prev.mtime) {
+    try {
+      const rawData = fs.readFileSync(mockDataPath, 'utf8');
+      mockData = JSON.parse(rawData);
+      dbCluster = mockData.dbCluster || {};
+      console.log(`\n[HOT-RELOAD] Detected save! Successfully hot-swapped live database from mock JSON!`);
+    } catch(e) {
+      console.error(`\n[HOT-RELOAD ERROR] Failed to load JSON (Check for missing commas/quotes):`, e.message);
     }
   });
 });
@@ -294,6 +316,116 @@ app.get('/api/features', requireTenant, (req, res) => {
   });
 
   res.json({ features });
+app.get('/api/tenants', (req, res) => {
+  const uniqueTenants = Array.from(new Set(rawEvents.map(e => e.tenantId))).filter(Boolean);
+  res.json(uniqueTenants);
+});
+
+app.get('/api/dashboard-data', requireTenant, (req, res) => {
+  const tenantId = req.headers['x-tenant-id'];
+  const tenantEvents = rawEvents.filter(e => e.tenantId === tenantId);
+  
+  const totalEvents = tenantEvents.length;
+  const activeUsers = new Set(tenantEvents.map(e => e.userId)).size;
+  
+  const featureCounts = {};
+  tenantEvents.forEach(e => {
+    featureCounts[e.featureId] = (featureCounts[e.featureId] || 0) + 1;
+  });
+  
+  const featureAdoption = Object.keys(featureCounts).map(feature => {
+    const cloudCount = tenantEvents.filter(e => e.featureId === feature && e.channel === 'web').length;
+    const onPremCount = tenantEvents.filter(e => e.featureId === feature && e.channel !== 'web').length;
+    
+    return {
+      feature: feature.replace(/([A-Z])/g, ' $1').trim(),
+      cloud: totalEvents > 0 ? Math.round((cloudCount / featureCounts[feature]) * 100) : 0,
+      onPrem: totalEvents > 0 ? Math.round((onPremCount / featureCounts[feature]) * 100) : 0 
+    };
+  });
+
+  const funnelSteps = [
+    { step: "App Opened", users: activeUsers > 0 ? activeUsers : 400 },
+    { step: "Feature Used", users: activeUsers > 0 ? Math.round(activeUsers * 0.8) : 320 },
+    { step: "Completed Flow", users: activeUsers > 0 ? Math.round(activeUsers * 0.3) : 120 }
+  ];
+
+  res.json({
+    kpis: {
+      totalEvents: totalEvents > 0 ? totalEvents : Math.floor(Math.random()*20000),
+      activeUsers: activeUsers > 0 ? activeUsers : Math.floor(Math.random()*5000), 
+      licensedSeats: tenantId === 'TENANT_HDFC' ? 10000 : 5000, // ROI limit baseline
+      anonymizedPercent: 99.8
+    },
+    featureAdoption,
+    journeyFunnel: funnelSteps,
+    predictiveInsights: [
+      { type: "success", message: `Dynamic Aggregation Engine successfully compiled ${totalEvents} raw semantic logs natively!` }
+    ]
+  });
+});
+
+app.get('/api/feature-tracker', requireTenant, (req, res) => {
+  const tenantId = req.headers['x-tenant-id'];
+  const tenantEvents = rawEvents.filter(e => e.tenantId === tenantId);
+  const totalEvents = tenantEvents.length;
+
+  const featureMap = {};
+  tenantEvents.forEach(e => {
+    if (!featureMap[e.featureId]) {
+      featureMap[e.featureId] = {
+        totalEngagement: 0,
+        uniqueUsers: new Set(),
+        channels: { web: 0, mobile: 0, api: 0 }
+      };
+    }
+    featureMap[e.featureId].totalEngagement++;
+    featureMap[e.featureId].uniqueUsers.add(e.userId);
+    if (e.channel && featureMap[e.featureId].channels[e.channel] !== undefined) {
+      featureMap[e.featureId].channels[e.channel]++;
+    }
+  });
+
+  const detailedFeatures = Object.keys(featureMap).map(featureId => {
+    const data = featureMap[featureId];
+    const uniqueUserCount = data.uniqueUsers.size;
+    const engagement = data.totalEngagement;
+    
+    const webPct = engagement > 0 ? Math.round((data.channels.web / engagement) * 100) : 0;
+    const mobilePct = engagement > 0 ? Math.round((data.channels.mobile / engagement) * 100) : 0;
+    const apiPct = engagement > 0 ? Math.round((data.channels.api / engagement) * 100) : 0;
+    
+    let roiStatus = "Stable";
+    let statusClass = "warning";
+    
+    // We adjust arbitrary thresholds for the mock dataset
+    if (engagement > 15) {
+      roiStatus = "High ROI";
+      statusClass = "success";
+    } else if (engagement < 5) {
+      roiStatus = "Underutilized";
+      statusClass = "danger";
+    }
+
+    return {
+      featureId: featureId.replace(/([A-Z])/g, ' $1').trim(),
+      totalEngagement: engagement,
+      uniqueUsers: uniqueUserCount,
+      distribution: { web: webPct, mobile: mobilePct, api: apiPct },
+      roiStatus,
+      statusClass
+    };
+  });
+  
+  detailedFeatures.sort((a,b) => b.totalEngagement - a.totalEngagement);
+
+  res.json({
+    metrics: {
+      totalMonitoredFeatures: detailedFeatures.length,
+      averageEngagement: detailedFeatures.length > 0 ? Math.round(totalEvents / detailedFeatures.length) : 0,
+    },
+    features: detailedFeatures
+  });
 });
 
 // ─── Compliance Routes (still from mock_api_responses.json) ───────────────────
@@ -311,6 +443,8 @@ app.get('/api/compliance/audit-logs', requireTenant, (req, res) => {
 
 // ─── Telemetry Ingestion Endpoint ─────────────────────────────────────────────
 app.post('/api/telemetry', requireTenant, (req, res) => {
+// Telemetry Batch Ingestion Endpoint (Circuit-Breaker Target)
+app.post('/api/ingest', requireTenant, (req, res) => {
   const { events } = req.body;
   if (!events || !Array.isArray(events)) {
     return res.status(400).json({ error: 'Invalid payload. Expected { events: [] }' });

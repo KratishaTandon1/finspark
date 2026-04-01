@@ -1,0 +1,352 @@
+[
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "AddToCart",
+    "userId": "user_701",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:00:00Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_601",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:01:00Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ViewProduct",
+    "userId": "user_702",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:02:30Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "BookStay",
+    "userId": "user_405",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:03:15Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "CancelRide",
+    "userId": "user_602",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:04:45Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "Checkout",
+    "userId": "user_701",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:05:00Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "SearchLocation",
+    "userId": "user_406",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:06:10Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RateDriver",
+    "userId": "user_603",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:07:22Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ApplyCoupon",
+    "userId": "user_703",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:08:55Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "MessageHost",
+    "userId": "user_405",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:09:40Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "UpdatePayment",
+    "userId": "user_601",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:11:05Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "TrackOrder",
+    "userId": "user_704",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:12:30Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "SearchLocation",
+    "userId": "user_407",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:13:50Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_604",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:15:00Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ViewProduct",
+    "userId": "user_705",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:16:15Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "BookStay",
+    "userId": "user_408",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:17:40Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "CheckFare",
+    "userId": "user_605",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:18:25Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "AddToCart",
+    "userId": "user_703",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:19:50Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "ViewWishlist",
+    "userId": "user_409",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:20:10Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_606",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:21:45Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ReviewProduct",
+    "userId": "user_706",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:22:30Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "SearchLocation",
+    "userId": "user_410",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:23:55Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RateDriver",
+    "userId": "user_607",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:24:15Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ViewProduct",
+    "userId": "user_707",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:25:40Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "BookStay",
+    "userId": "user_411",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:26:50Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "CancelRide",
+    "userId": "user_608",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:27:35Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "AddToCart",
+    "userId": "user_708",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:28:10Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "SearchLocation",
+    "userId": "user_412",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:29:20Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "UpdateProfile",
+    "userId": "user_601",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:30:45Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "Checkout",
+    "userId": "user_708",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:31:55Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "MessageHost",
+    "userId": "user_411",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:32:10Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_609",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:33:40Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ViewProduct",
+    "userId": "user_709",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:34:50Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "ViewWishlist",
+    "userId": "user_413",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:35:15Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "CheckFare",
+    "userId": "user_610",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:36:25Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "AddToCart",
+    "userId": "user_709",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:37:40Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "BookStay",
+    "userId": "user_414",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:38:55Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_611",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:39:10Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "TrackOrder",
+    "userId": "user_701",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:40:20Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "SearchLocation",
+    "userId": "user_415",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:41:35Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RateDriver",
+    "userId": "user_612",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:42:50Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "ViewProduct",
+    "userId": "user_710",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:43:10Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "MessageHost",
+    "userId": "user_414",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:44:45Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_613",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:45:55Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "AddToCart",
+    "userId": "user_710",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:46:20Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "BookStay",
+    "userId": "user_416",
+    "channel": "web",
+    "timestamp": "2026-04-01T22:47:35Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "CheckFare",
+    "userId": "user_614",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:48:50Z"
+  },
+  {
+    "tenantId": "TENANT_AMAZON",
+    "featureId": "Checkout",
+    "userId": "user_710",
+    "channel": "api",
+    "timestamp": "2026-04-01T22:49:15Z"
+  },
+  {
+    "tenantId": "TENANT_AIRBNB",
+    "featureId": "SearchLocation",
+    "userId": "user_417",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:50:25Z"
+  },
+  {
+    "tenantId": "TENANT_UBER",
+    "featureId": "RequestRide",
+    "userId": "user_615",
+    "channel": "mobile",
+    "timestamp": "2026-04-01T22:51:40Z"
+  }
+]

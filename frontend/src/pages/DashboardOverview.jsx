@@ -44,6 +44,12 @@ export default function DashboardOverview({ tenantId }) {
     setLoading(true);
     fetch('http://localhost:3001/api/analytics', {
       headers: { 'x-tenant-id': tenantId }
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+    // Making sure the fetch includes strict DB segregation identifier
+    fetch(`${API_BASE_URL}/api/dashboard-data`, {
+       headers: {
+           'x-tenant-id': tenantId
+       }
     })
       .then(r => r.json())
       .then(d => {
@@ -134,6 +140,74 @@ export default function DashboardOverview({ tenantId }) {
                     background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
                     color: '#ef4444', borderRadius: '999px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 600
                   }}>{f}</span>
+      {/* License Utilization Context */}
+      {data.kpis.licensedSeats && (
+        <div className="glass-card" style={{ marginBottom: '2rem' }} data-feature="Dashboard:KPI:LicenseUtilization">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.75rem' }}>
+            <div>
+              <h2 className="card-title" style={{ margin: 0 }}>License Utilization ROI</h2>
+              <p className="text-muted" style={{ fontSize: '0.875rem' }}>Active Users vs Procured Enterprise Seats</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
+                  {Math.round((data.kpis.activeUsers / data.kpis.licensedSeats) * 100)}%
+              </div>
+            </div>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+             <div style={{ width: `${Math.round((data.kpis.activeUsers / data.kpis.licensedSeats) * 100)}%`, height: '100%', background: 'var(--success)' }}></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+             <span>{data.kpis.activeUsers.toLocaleString()} Active</span>
+             <span>{data.kpis.licensedSeats.toLocaleString()} Purchased</span>
+          </div>
+        </div>
+      )}
+
+      {/* Predictive Strategic Intelligence UI Section */}
+      {(() => {
+         // Dynamic Predictive Logic (Feature trigger based on usage count)
+         const threshold = 100000;
+         const usageCount = data.kpis ? data.kpis.totalEvents : 0;
+         const dynamicInsights = [];
+         
+         if (usageCount > 0 && usageCount < threshold) {
+             dynamicInsights.push({
+                 type: 'danger',
+                 message: `High Risk of Non-Renewal: Engagement is severely low (${usageCount.toLocaleString()} events). Immediate CSM intervention required.`
+             });
+         }
+         
+         const allInsights = [...(data.predictiveInsights || []), ...dynamicInsights];
+         if (allInsights.length === 0) return null;
+
+         return (
+          <div className="glass-card page-header" style={{ borderColor: 'var(--accent-secondary)' }} data-feature="Dashboard:Component:StrategicInsights">
+             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
+                <Sparkles className="text-purple-400" />
+                <h2 className="card-title" style={{ margin: 0, background: 'linear-gradient(90deg, #c084fc, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Strategic Intelligence Engine</h2>
+             </div>
+             
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {allInsights.map((insight, idx) => (
+                    <div key={idx} style={{ 
+                        padding: '1rem', 
+                        borderRadius: '8px', 
+                        background: 'rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '1rem',
+                        borderLeft: `4px solid ${insight.type === 'danger' ? 'var(--danger)' : insight.type === 'success' ? 'var(--success)' : insight.type === 'warning' ? 'var(--warning)' : 'var(--accent-primary)'}` 
+                    }}>
+                        {insight.type === 'danger' && <AlertTriangle className="text-red-500 w-5 h-5 flex-shrink-0" />}
+                        {insight.type === 'warning' && <AlertTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />}
+                        {insight.type === 'success' && <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0" />}
+                        {insight.type === 'info' && <Info className="text-blue-500 w-5 h-5 flex-shrink-0" />}
+                        
+                        <div style={{ color: "var(--text-main)", fontSize: "0.95rem", lineHeight: "1.4" }}>
+                            {insight.message}
+                        </div>
+                    </div>
                 ))}
               </div>
             )}
