@@ -1,50 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Database, Eye, EyeOff, Shield, Building2, ChevronRight } from 'lucide-react';
-
-// ─── Mock user credentials ────────────────────────────────────────────────────
-// In production this would be a real auth API call
-const MOCK_USERS = [
-  {
-    id: 'admin_usr_001',
-    email: 'superadmin@finspark.io',
-    password: 'admin123',
-    role: 'Super_Admin',
-    displayName: 'Arjun Mehta',
-    tenantId: null, // Super Admin sees ALL tenants
-    tenantOptions: ['TENANT_HDFC', 'TENANT_ICICI'],
-    badge: 'Platform Admin',
-    badgeColor: '#8b5cf6'
-  },
-  {
-    id: 'hdfc_tenant_001',
-    email: 'admin@hdfc.com',
-    password: 'hdfc123',
-    role: 'Tenant_Admin',
-    displayName: 'Priya Sharma',
-    tenantId: 'TENANT_HDFC', // Locked to HDFC only
-    tenantOptions: ['TENANT_HDFC'],
-    badge: 'HDFC Enterprise',
-    badgeColor: '#10b981'
-  },
-  {
-    id: 'icici_tenant_001',
-    email: 'admin@icici.com',
-    password: 'icici123',
-    role: 'Tenant_Admin',
-    displayName: 'Rahul Verma',
-    tenantId: 'TENANT_ICICI', // Locked to ICICI only
-    tenantOptions: ['TENANT_ICICI'],
-    badge: 'ICICI Bank',
-    badgeColor: '#f59e0b'
-  }
-];
-
-// ─── Quick-login hint cards ───────────────────────────────────────────────────
-const DEMO_ACCOUNTS = [
-  { label: 'Super Admin',   email: 'superadmin@finspark.io', password: 'admin123',  color: '#8b5cf6', desc: 'All tenants visible' },
-  { label: 'HDFC Admin',    email: 'admin@hdfc.com',          password: 'hdfc123',   color: '#10b981', desc: 'HDFC tenant only' },
-  { label: 'ICICI Admin',   email: 'admin@icici.com',         password: 'icici123',  color: '#f59e0b', desc: 'ICICI tenant only' },
-];
 
 export default function Login({ onLogin }) {
   const [email, setEmail]         = useState('');
@@ -52,6 +7,63 @@ export default function Login({ onLogin }) {
   const [showPass, setShowPass]   = useState(false);
   const [error, setError]         = useState('');
   const [loading, setLoading]     = useState(false);
+  const [availableTenants, setAvailableTenants] = useState([]);
+
+  useEffect(() => {
+    const fetchTenants = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/api/tenants`);
+        const data = await res.json();
+        if (data && Array.isArray(data)) {
+          setAvailableTenants(data);
+        }
+      } catch (e) {
+        console.error("Failed to retrieve logical tenants");
+      }
+    };
+    fetchTenants();
+  }, []);
+
+  // Dynamically build MOCK_USERS and DEMO_ACCOUNTS based on available backend tenants
+  const MOCK_USERS = [
+    {
+      id: 'admin_usr_001',
+      email: 'superadmin@finspark.io',
+      password: 'admin123',
+      role: 'Super_Admin',
+      displayName: 'Arjun Mehta',
+      tenantId: null,
+      tenantOptions: availableTenants.length > 0 ? availableTenants : ['TENANT_HDFC'],
+      badge: 'Platform Admin',
+      badgeColor: '#8b5cf6'
+    }
+  ];
+
+  const colors = ['#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#ec4899', '#06b6d4'];
+  const tList = availableTenants.length > 0 ? availableTenants : ['TENANT_HDFC', 'TENANT_ICICI'];
+  
+  tList.forEach((tenant, idx) => {
+    const name = tenant.replace('TENANT_', '').toLowerCase();
+    MOCK_USERS.push({
+      id: `${name}_tenant_001`,
+      email: `admin@${name}.com`,
+      password: `${name}123`,
+      role: 'Tenant_Admin',
+      displayName: `${name.toUpperCase()} Admin`,
+      tenantId: tenant,
+      tenantOptions: [tenant],
+      badge: `${name.toUpperCase()} Enterprise`,
+      badgeColor: colors[idx % colors.length]
+    });
+  });
+
+  const DEMO_ACCOUNTS = MOCK_USERS.map(u => ({
+    label: u.role === 'Super_Admin' ? 'Super Admin' : `${u.tenantOptions[0].replace('TENANT_', '')} Admin`,
+    email: u.email,
+    password: u.password,
+    color: u.badgeColor,
+    desc: u.role === 'Super_Admin' ? 'All tenants visible' : `${u.tenantOptions[0].replace('TENANT_', '')} restricted scope`
+  }));
 
   const fillDemo = (account) => {
     setEmail(account.email);

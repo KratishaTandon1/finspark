@@ -110,7 +110,8 @@ export default function FeatureTracker({ tenantId }) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetch('http://localhost:3001/api/features', {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+    fetch(`${API_BASE_URL}/api/features`, {
       headers: { 'x-tenant-id': tenantId }
     })
       .then(r => r.json())
