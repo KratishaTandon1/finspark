@@ -4,6 +4,7 @@ import { LayoutDashboard, Shield, BarChart3, Settings, Database, Building, Menu,
 import DashboardOverview from './pages/DashboardOverview';
 import ComplianceHub from './pages/ComplianceHub';
 import ComingSoon from './pages/ComingSoon';
+import FeatureTracker from './pages/FeatureTracker';
 import { telemetry } from './sdk/finspark-telemetry'; 
 
 function App() {
@@ -146,7 +147,7 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/overview" element={<DashboardOverview tenantId={activeTenant} />} />
-            <Route path="/adoption" element={<ComingSoon title="Feature Tracker" description="This module is under construction. It will display deeper metric tracking natively bound to the selected organizational context." />} />
+            <Route path="/adoption" element={<FeatureTracker tenantId={activeTenant} />} />
             
             {/* Protected Routes */}
             <Route path="/compliance" element={

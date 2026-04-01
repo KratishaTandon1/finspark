@@ -112,6 +112,69 @@ app.get('/api/dashboard-data', requireTenant, (req, res) => {
   });
 });
 
+app.get('/api/feature-tracker', requireTenant, (req, res) => {
+  const tenantId = req.headers['x-tenant-id'];
+  const tenantEvents = rawEvents.filter(e => e.tenantId === tenantId);
+  const totalEvents = tenantEvents.length;
+
+  const featureMap = {};
+  tenantEvents.forEach(e => {
+    if (!featureMap[e.featureId]) {
+      featureMap[e.featureId] = {
+        totalEngagement: 0,
+        uniqueUsers: new Set(),
+        channels: { web: 0, mobile: 0, api: 0 }
+      };
+    }
+    featureMap[e.featureId].totalEngagement++;
+    featureMap[e.featureId].uniqueUsers.add(e.userId);
+    if (e.channel && featureMap[e.featureId].channels[e.channel] !== undefined) {
+      featureMap[e.featureId].channels[e.channel]++;
+    }
+  });
+
+  const detailedFeatures = Object.keys(featureMap).map(featureId => {
+    const data = featureMap[featureId];
+    const uniqueUserCount = data.uniqueUsers.size;
+    const engagement = data.totalEngagement;
+    
+    const webPct = engagement > 0 ? Math.round((data.channels.web / engagement) * 100) : 0;
+    const mobilePct = engagement > 0 ? Math.round((data.channels.mobile / engagement) * 100) : 0;
+    const apiPct = engagement > 0 ? Math.round((data.channels.api / engagement) * 100) : 0;
+    
+    let roiStatus = "Stable";
+    let statusClass = "warning";
+    
+    // We adjust arbitrary thresholds for the mock dataset
+    if (engagement > 15) {
+      roiStatus = "High ROI";
+      statusClass = "success";
+    } else if (engagement < 5) {
+      roiStatus = "Underutilized";
+      statusClass = "danger";
+    }
+
+    return {
+      featureId: featureId.replace(/([A-Z])/g, ' $1').trim(),
+      totalEngagement: engagement,
+      uniqueUsers: uniqueUserCount,
+      distribution: { web: webPct, mobile: mobilePct, api: apiPct },
+      roiStatus,
+      statusClass
+    };
+  });
+  
+  detailedFeatures.sort((a,b) => b.totalEngagement - a.totalEngagement);
+
+  res.json({
+    metrics: {
+      totalMonitoredFeatures: detailedFeatures.length,
+      averageEngagement: detailedFeatures.length > 0 ? Math.round(totalEvents / detailedFeatures.length) : 0,
+    },
+    features: detailedFeatures
+  });
+});
+
 // Explicit compliance endpoints
 app.get('/api/compliance/consent', requireTenant, (req, res) => {
   res.json(mockData.consent_settings || {});
