@@ -63,6 +63,11 @@ const requireTenant = (req, res, next) => {
 
 // --- ENDPOINTS ---
 
+app.get('/api/tenants', (req, res) => {
+  const uniqueTenants = Array.from(new Set(rawEvents.map(e => e.tenantId))).filter(Boolean);
+  res.json(uniqueTenants);
+});
+
 app.get('/api/dashboard-data', requireTenant, (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   const tenantEvents = rawEvents.filter(e => e.tenantId === tenantId);

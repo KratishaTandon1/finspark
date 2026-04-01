@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Shield, BarChart3, Settings, Database, Building, Menu, X } from 'lucide-react';
 import DashboardOverview from './pages/DashboardOverview';
@@ -10,6 +10,27 @@ function App() {
   const [activeTenant, setActiveTenant] = useState(telemetry.tenantId);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeRole, setActiveRole] = useState('Admin');
+  const [availableTenants, setAvailableTenants] = useState([]);
+
+  useEffect(() => {
+    const fetchTenants = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/api/tenants`);
+        const data = await res.json();
+        if (data && Array.isArray(data) && data.length > 0) {
+          setAvailableTenants(data);
+          // Auto-select if current tenant is orphaned 
+          if (!data.includes(activeTenant)) {
+            telemetry.setTenant(data[0]);
+            setActiveTenant(data[0]);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to retrieve logical tenants");
+      }
+    };
+    fetchTenants();
+  }, [activeTenant]);
 
   const switchTenant = (e) => {
     const newTenantId = e.target.value;
@@ -49,16 +70,24 @@ function App() {
                 Context Segregation
               </div>
              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px' }}>
-                <Building className="w-4 h-4 text-emerald-400" />
-                <select 
-                  value={activeTenant} 
-                  onChange={switchTenant}
-                  style={{ background: 'transparent', color: 'var(--text-main)', border: 'none', outline: 'none', width: '100%', cursor: 'pointer', fontSize: '0.875rem' }}
-                >
-                  <option value="TENANT_HDFC" style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>HDFC Enterprise</option>
-                  <option value="TENANT_ICICI" style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>ICICI Bank</option>
-                </select>
-             </div>
+            <Building className="w-4 h-4 text-emerald-400" />
+            <select 
+              value={activeTenant} 
+              onChange={switchTenant}
+              className="tenant-switcher"
+              style={{ background: 'transparent', color: 'var(--text-main)', border: 'none', outline: 'none', width: '100%', cursor: 'pointer', fontSize: '0.875rem' }}
+            >
+              {availableTenants.length > 0 ? (
+                availableTenants.map(t => (
+                  <option key={t} value={t} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>
+                    {t.replace('TENANT_', '').replace(/_/g, ' ')}
+                  </option>
+                ))
+              ) : (
+                <option value={activeTenant} style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>Loading Context...</option>
+              )}
+            </select>
+          </div>
           </div>
 
           {/* PERSONA SIMULATOR */}
