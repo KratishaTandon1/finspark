@@ -75,7 +75,7 @@ function App() {
     <BrowserRouter>
       <div className="app-container">
 
-        <nav className="sidebar">
+        <>
           {/* Mobile Header */}
           <div className="mobile-header">
             <div className="sidebar-logo" style={{ fontSize: '1.25rem' }}>
@@ -215,7 +215,7 @@ function App() {
               </button>
             </div>
           </nav>
-        </nav>
+        </>
 
         {/* ── Main Content ──────────────────────────────────────────────────────── */}
         <main className="main-content">
