@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 app.use(cors());
@@ -135,6 +136,37 @@ function calculateDailyTrend(events) {
     .slice(-14);
 }
 
+function calculateSegmentation(events) {
+  const map = { Retail: 0, Wealth: 0, Corporate: 0 };
+  events.forEach(e => {
+    const charCode = e.userId ? e.userId.charCodeAt(e.userId.length - 1) : 0;
+    if (charCode % 3 === 0) map.Wealth++;
+    else if (charCode % 2 === 0) map.Corporate++;
+    else map.Retail++;
+  });
+  return Object.entries(map).map(([segment, count]) => ({ segment, count, fullMark: 150000 }));
+}
+
+function calculateHeatmap(events) {
+  const matrix = {};
+  events.forEach(e => {
+    if (!e.featureId) return;
+    const fId = e.featureId.replace(/([A-Z])/g, ' $1').trim();
+    if (!matrix[fId]) matrix[fId] = { web: 0, mobile: 0, api: 0 };
+    if (e.channel) matrix[fId][e.channel] = (matrix[fId][e.channel] || 0) + 1;
+  });
+  
+  return Object.entries(matrix)
+    .map(([feature, channels]) => ({
+      feature,
+      web: channels.web,
+      mobile: channels.mobile,
+      api: channels.api
+    }))
+    .sort((a, b) => (b.web + b.mobile + b.api) - (a.web + a.mobile + a.api))
+    .slice(0, 10); // Take top 10 features for the heatmap to fit nicely
+}
+
 // DYNAMIC LICENSE GAP
 function calculateLicenseGap(tenantId, events) {
   const allFeatures = getFeaturesForTenant(tenantId);
@@ -159,6 +191,32 @@ function generatePredictiveInsights(tenantId, events, licenseGap) {
     });
   }
   return insights;
+}
+
+function applyPIIMasking(events, tenantId) {
+  const rules = mockData.pii_masking_rules?.rules || [];
+  if (!mockData.pii_masking_rules?.active || rules.length === 0) return events;
+  
+  return events.map(e => {
+    const maskedEvent = { ...e };
+    rules.forEach(rule => {
+      if (maskedEvent[rule.field]) {
+        if (rule.action === 'mask_full') maskedEvent[rule.field] = '***MASKED***';
+        else if (rule.action === 'mask_partial') {
+          const val = maskedEvent[rule.field];
+          maskedEvent[rule.field] = '*'.repeat(Math.max(val.length - (rule.visibleLastChars || 4), 0)) + val.slice(-(rule.visibleLastChars || 4));
+        }
+        else if (rule.action === 'hash') {
+          maskedEvent[rule.field] = crypto.createHash('sha256').update(String(maskedEvent[rule.field])).digest('hex');
+        }
+        else if (rule.action === 'anonymize_subnet') {
+          const parts = String(maskedEvent[rule.field]).split('.');
+          if(parts.length === 4) maskedEvent[rule.field] = `${parts[0]}.${parts[1]}.${parts[2]}.0/24`;
+        }
+      }
+    });
+    return maskedEvent;
+  });
 }
 
 // ─── Middleware: Tenant Isolation ─────────────────────────────────────────────
@@ -189,6 +247,8 @@ app.get('/api/dashboard-data', requireTenant, (req, res) => {
     journeyFunnel: calculateJourneyFunnel(events),
     channelBreakdown: calculateChannelBreakdown(events),
     dailyTrend: calculateDailyTrend(events),
+    segmentation: calculateSegmentation(events),
+    heatmapMatrix: calculateHeatmap(events),
     licenseGap,
     predictiveInsights: generatePredictiveInsights(req.tenantId, events, licenseGap)
   });
@@ -228,7 +288,27 @@ app.get('/api/features', requireTenant, (req, res) => {
 
 // Compliance & Telemetry (keeping your original logic)
 app.get('/api/compliance/consent', requireTenant, (req, res) => res.json(mockData.consent_settings || {}));
-app.post('/api/telemetry', requireTenant, (req, res) => res.status(200).json({ status: 'success' }));
+app.get('/api/compliance/pii-rules', requireTenant, (req, res) => res.json(mockData.pii_masking_rules || {}));
+app.get('/api/compliance/audit-logs', requireTenant, (req, res) => res.json(mockData.telemetry_audit_logs || {}));
+app.post('/api/telemetry', requireTenant, (req, res) => {
+  const events = req.body.events || [];
+  const maskedEvents = applyPIIMasking(events, req.tenantId);
+  console.log(`\n[TELEMETRY] 📥 Received sync from tenant: ${req.tenantId}`);
+  if (maskedEvents.length > 0) {
+     console.log(`[PII-AUDIT] Active Masking Applied. Sample Event:`, JSON.stringify(maskedEvents[0], null, 2));
+  }
+  res.status(200).json({ status: 'success' });
+});
+
+app.post('/api/ingest', requireTenant, (req, res) => {
+  const events = req.body.events || [];
+  const maskedEvents = applyPIIMasking(events, req.tenantId);
+  console.log(`\n[INGEST] 📥 Received manual sync from tenant: ${req.tenantId} with ${events.length} events`);
+  if (maskedEvents.length > 0) {
+     console.log(`[PII-AUDIT] Active Masking Applied. Sample Event:`, JSON.stringify(maskedEvents[0], null, 2));
+  }
+  res.status(200).json({ status: 'success' });
+});
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {

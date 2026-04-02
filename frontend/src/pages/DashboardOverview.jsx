@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-  AreaChart, Area, PieChart, Pie, Cell, LineChart, Line
+  AreaChart, Area, PieChart, Pie, Cell, LineChart, Line,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
-import { Sparkles, AlertTriangle, CheckCircle2, Info, ShieldCheck } from 'lucide-react';
+import { Sparkles, AlertTriangle, CheckCircle2, Info, ShieldCheck, Target, Activity } from 'lucide-react';
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
 const CHANNEL_COLORS = { web: '#3b82f6', mobile: '#10b981', api: '#f59e0b' };
@@ -65,11 +66,19 @@ export default function DashboardOverview({ tenantId }) {
     </div>
   );
 
-  const { kpis, featureAdoption, journeyFunnel, channelBreakdown, dailyTrend, licenseGap } = data;
+  const { kpis, featureAdoption, journeyFunnel, channelBreakdown, dailyTrend, licenseGap, segmentation, heatmapMatrix } = data;
 
   // Utilization color
   const utilizationColor = licenseGap?.utilizationPercent >= 70 ? '#10b981'
     : licenseGap?.utilizationPercent >= 40 ? '#f59e0b' : '#ef4444';
+
+  const maxHeat = heatmapMatrix ? Math.max(...heatmapMatrix.flatMap(h => [h.web, h.mobile, h.api])) : 1;
+  const getHeatColor = (val) => {
+    if (!val) return 'rgba(255,255,255,0.02)';
+    const intensity = Math.min(val / maxHeat, 1);
+    // Fire color mapping for heat: from dark transparent red to bright orange/yellow
+    return `hsla(${40 - (intensity * 40)}, 90%, ${40 + intensity * 20}%, ${0.2 + intensity * 0.8})`;
+  };
 
   return (
     <div>
@@ -305,6 +314,58 @@ export default function DashboardOverview({ tenantId }) {
                 <strong>{entry.count}</strong>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Row 3: Hackathon Intelligence (Heatmap + Segmentation) ────────────── */}
+      <div className="grid-2" style={{ marginBottom: '2rem' }}>
+        {/* Advanced Heatmap */}
+        <div className="glass-card" data-feature="Dashboard:Component:AdvancedHeatmap">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <Activity className="text-orange-500 w-5 h-5" />
+            <h2 className="card-title" style={{ margin: 0 }}>Feature Channel Heatmap</h2>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowX: 'auto' }}>
+            {/* Header */}
+            <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr 1fr', gap: '4px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+               <div style={{ textAlign: 'left' }}>Feature Module</div>
+               <div>Web</div>
+               <div>Mobile</div>
+               <div>API</div>
+            </div>
+            
+            {/* Rows */}
+            {heatmapMatrix && heatmapMatrix.map((row, idx) => (
+              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr 1fr', gap: '4px' }}>
+                 <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                   {row.feature}
+                 </div>
+                 <div style={{ background: getHeatColor(row.web), height: '28px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600 }}>{row.web > 0 ? row.web : ''}</div>
+                 <div style={{ background: getHeatColor(row.mobile), height: '28px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600 }}>{row.mobile > 0 ? row.mobile : ''}</div>
+                 <div style={{ background: getHeatColor(row.api), height: '28px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600 }}>{row.api > 0 ? row.api : ''}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Customer Segmentation Radar */}
+        <div className="glass-card" data-feature="Dashboard:Component:CustomerSegmentation">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <Target className="text-blue-400 w-5 h-5" />
+            <h2 className="card-title" style={{ margin: 0 }}>Customer Personas Segmentation</h2>
+          </div>
+          <div style={{ height: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={segmentation}>
+                <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                <PolarAngleAxis dataKey="segment" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
+                <Radar name="Adoption Volume" dataKey="count" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.4} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
