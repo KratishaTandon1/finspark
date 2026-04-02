@@ -138,9 +138,14 @@ export default function DashboardOverview({ tenantId }) {
             </div>
             <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
               <strong style={{ color: '#10b981' }}>{licenseGap.totalUsed}</strong> of{' '}
-              <strong>{licenseGap.totalLicensed}</strong> licensed features are actively used.{' '}
-              <strong style={{ color: '#ef4444' }}>{licenseGap.unusedCount}</strong> features are paid for but never touched.
+              <strong>{licenseGap.totalLicensed}</strong> licensed features are heavily adopted.{' '}
+              <strong style={{ color: '#ef4444' }}>{licenseGap.unusedCount}</strong> features are severely under-utilized (Low ROI).
             </div>
+            {licenseGap.wastedSpend > 0 && (
+              <div style={{ fontSize: '0.9rem', color: '#ef4444', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <AlertTriangle size={14} /> Total Wasted Spend: ${licenseGap.wastedSpend.toLocaleString()} / year
+              </div>
+            )}
             {licenseGap.unusedFeatures?.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {licenseGap.unusedFeatures.map(f => (

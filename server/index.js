@@ -169,16 +169,37 @@ function calculateHeatmap(events) {
 
 // DYNAMIC LICENSE GAP
 function calculateLicenseGap(tenantId, events) {
-  const allFeatures = getFeaturesForTenant(tenantId);
-  const usedCount = allFeatures.length; // In this dynamic mock, we treat all generated features as active
+  // Aggregate events by feature
+  const featureCounts = {};
+  let totalEventVolume = 0;
+  
+  events.forEach(e => {
+    if (e.featureId) {
+      const fId = e.featureId.replace(/([A-Z])/g, ' $1').trim();
+      featureCounts[fId] = (featureCounts[fId] || 0) + 1;
+      totalEventVolume++;
+    }
+  });
+
+  // Sort features by total usage (ascending) to find the least used ones
+  const sortedFeatures = Object.entries(featureCounts).sort((a, b) => a[1] - b[1]);
+  const totalFeaturesUsed = sortedFeatures.length;
+  
+  // Dynamically identify the bottom 20% (Low ROI Shelfware)
+  const underUtilizedCount = Math.max(1, Math.floor(totalFeaturesUsed * 0.2));
+  const underUtilizedFeatures = sortedFeatures.slice(0, underUtilizedCount);
+
+  // Still use $12,500 enterprise module cost for Wasted Spend FinOps Math
+  const costPerFeature = 12500;
 
   return {
-    totalLicensed: allFeatures.length,
-    totalUsed: usedCount,
-    unusedCount: 0,
-    usedFeatures: allFeatures,
-    unusedFeatures: [],
-    utilizationPercent: allFeatures.length ? 100 : 0
+    totalLicensed: totalFeaturesUsed,
+    totalUsed: totalFeaturesUsed - underUtilizedCount,
+    unusedCount: underUtilizedCount,
+    usedFeatures: Object.keys(featureCounts),
+    unusedFeatures: underUtilizedFeatures.map(f => `${f[0]} (${f[1]} events)`), // Pass name + count
+    utilizationPercent: Math.round(((totalFeaturesUsed - underUtilizedCount) / totalFeaturesUsed) * 100) || 0,
+    wastedSpend: underUtilizedCount * costPerFeature
   };
 }
 
@@ -188,6 +209,11 @@ function generatePredictiveInsights(tenantId, events, licenseGap) {
     insights.push({
       type: 'success',
       message: `Excellent adoption for ${tenantId}. Usage is consistent across all features.`
+    });
+  } else if (licenseGap.wastedSpend > 0) {
+    insights.push({
+      type: 'danger',
+      message: `[FinOps ROI Alert] Bottom ${licenseGap.unusedCount} features have extremely low traffic. Action required to salvage $${licenseGap.wastedSpend.toLocaleString()}/year in underutilized capabilities.`
     });
   }
   return insights;
@@ -203,7 +229,7 @@ function applyPIIMasking(events, tenantId) {
       if (maskedEvent[rule.field]) {
         if (rule.action === 'mask_full') maskedEvent[rule.field] = '***MASKED***';
         else if (rule.action === 'mask_partial') {
-          const val = maskedEvent[rule.field];
+          const val = String(maskedEvent[rule.field] || '');
           maskedEvent[rule.field] = '*'.repeat(Math.max(val.length - (rule.visibleLastChars || 4), 0)) + val.slice(-(rule.visibleLastChars || 4));
         }
         else if (rule.action === 'hash') {

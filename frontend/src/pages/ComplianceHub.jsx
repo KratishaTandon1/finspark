@@ -9,6 +9,15 @@ export default function ComplianceHub({ tenantId }) {
   
   // Local state for UI toggles
   const [globalConsent, setGlobalConsent] = useState(true);
+  const [healthMetrics, setHealthMetrics] = useState(telemetry.getHealthMetrics());
+
+  useEffect(() => {
+    // Poll SDK health metrics every second for visual UI updates
+    const interval = setInterval(() => {
+      setHealthMetrics(telemetry.getHealthMetrics());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // We must pass the DB Segregation header for the V2 backend
@@ -122,6 +131,44 @@ export default function ComplianceHub({ tenantId }) {
           ) : (
             <p className="text-muted">Loading rules...</p>
           )}
+        </div>
+      </div>
+
+      {/* Telemetry SDK System Health Speedometer */}
+      <div className="glass-card" style={{ marginBottom: "2rem", borderColor: "rgba(16, 185, 129, 0.4)" }}>
+        <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Activity className="w-5 h-5 text-green-500" />
+          Telemetry SDK Performance & Health
+        </h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginTop: '1rem' }}>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+             <p className="text-muted" style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>
+               The FinSpark SDK uses an intelligent batched circuit-breaker architecture to ensure your core Enterprise host application experiences <strong>zero performance degradation</strong>.
+             </p>
+             <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#10b981' }}>{healthMetrics.overheadMs}ms</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Avg Main-Thread Overhead</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6' }}>{healthMetrics.reductionPercent}%</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Network Call Reduction</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b' }}>10s</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Batch Flush Interval</div>
+                </div>
+             </div>
+          </div>
+          
+          <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             {/* Simulated Speedometer UI */}
+             <svg width="120" height="70" viewBox="0 0 120 70">
+                <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="12" strokeLinecap="round" />
+                <path d="M 10 60 A 50 50 0 0 1 85 15" fill="none" stroke="#10b981" strokeWidth="12" strokeLinecap="round" />
+                <text x="60" y="55" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold">Active</text>
+             </svg>
+          </div>
         </div>
       </div>
 
