@@ -2,6 +2,8 @@
 
 An enterprise-grade React dashboard and Node.js backend prototype demonstrating a secure, multi-tenant Feature Intelligence Framework. This project was built to showcase a lightweight telemetry SDK with batching (circuit breaker), strict database-level isolation, and a dynamic PII masking ETL pipeline.
 
+## Live Demo
+link: https://finspark-wvea.vercel.app/overview
 ## ✨ Key Features
 
 - **Multi-Tenant Edge Security:** The backend explicitly requires strict `x-tenant-id` database boundary checks, instantly blocking unauthorized cross-tenant requests.
