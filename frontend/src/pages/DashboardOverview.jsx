@@ -72,13 +72,18 @@ export default function DashboardOverview({ tenantId }) {
   const utilizationColor = licenseGap?.utilizationPercent >= 70 ? '#10b981'
     : licenseGap?.utilizationPercent >= 40 ? '#f59e0b' : '#ef4444';
 
-  const maxHeat = heatmapMatrix ? Math.max(...heatmapMatrix.flatMap(h => [h.web, h.mobile, h.api])) : 1;
-  const getHeatColor = (val) => {
-    if (!val) return 'rgba(255,255,255,0.02)';
-    const intensity = Math.min(val / maxHeat, 1);
-    // Fire color mapping for heat: from dark transparent red to bright orange/yellow
-    return `hsla(${40 - (intensity * 40)}, 90%, ${40 + intensity * 20}%, ${0.2 + intensity * 0.8})`;
-  };
+  const allHeatValues = heatmapMatrix
+  ? heatmapMatrix.flatMap(h => [h.web, h.mobile, h.api]).filter(v => v > 0)
+  : [];
+const maxHeat = allHeatValues.length ? Math.max(...allHeatValues) : 1;
+const minHeat = allHeatValues.length ? Math.min(...allHeatValues) : 0;
+
+const getHeatColor = (val) => {
+  if (!val) return 'rgba(255,255,255,0.02)';
+  const range = maxHeat - minHeat || 1;
+  const intensity = Math.min((val - minHeat) / range, 1);
+  return `hsla(${40 - (intensity * 40)}, 90%, ${40 + intensity * 20}%, ${0.2 + intensity * 0.8})`;
+};
 
   return (
     <div>
