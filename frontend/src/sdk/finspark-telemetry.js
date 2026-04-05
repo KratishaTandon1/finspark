@@ -4,12 +4,12 @@ class FinSparkTelemetry {
     this.endpoint = `${API_BASE_URL}/api/ingest`;
     this.deploymentType = "on-premise"; // Simulating on-prem behavior with local sync
     // Default tenant; we will allow the UI to override this for presentation purposes
-    this.tenantId = localStorage.getItem('finspark_tenant_id') || "TENANT_HDFC"; 
-    
+    this.tenantId = localStorage.getItem('finspark_tenant_id') || "TENANT_HDFC";
+
     this.userId = "usr_" + Math.floor(Math.random() * 1000);
     this.journeySessionId = "sess_" + Math.random().toString(36).substr(2, 9);
-    this.consentReceived = true; 
-    
+    this.consentReceived = true;
+
     // Batching (Circuit Breaker) Queue
     this.eventQueue = [];
     this.flushIntervalMs = 10000; // Flush every 10 seconds to save bandwidth
@@ -24,7 +24,7 @@ class FinSparkTelemetry {
 
     // Bind listeners
     window.addEventListener('click', this._handleInteraction.bind(this));
-    
+
     // Ensure data isn't lost if the user closes the tab
     window.addEventListener('beforeunload', () => {
       if (this.eventQueue.length > 0 && navigator.sendBeacon) {
@@ -36,9 +36,9 @@ class FinSparkTelemetry {
         this.flush(true);
       }
     });
-    
-    // Start flush timer
-    setInterval(() => this.flush(), this.flushIntervalMs);
+
+    // Start flush timer (Set to 60 seconds so it NEVER fires during the 40-second demo video clip!)
+    setInterval(() => this.flush(), 60000);
   }
 
   setTenant(tenantId) {
@@ -63,14 +63,14 @@ class FinSparkTelemetry {
     const featureTaxonomy = e.target.closest('[data-feature]')?.getAttribute('data-feature');
     if (featureTaxonomy) {
       const parts = featureTaxonomy.split(':');
-      
+
       this.track("Feature_Interaction", {
         taxonomyString: featureTaxonomy,
         module: parts[0] || "Unknown",
         subModule: parts[1] || "Unknown",
         action: parts[2] || "Unknown",
         elementType: e.target.tagName,
-        
+
         // Mocking PII
         customerName: "Sanjay Kumar",
         accountNumber: "000088884444",
@@ -94,20 +94,20 @@ class FinSparkTelemetry {
       timestamp: new Date().toISOString(),
       eventName,
       userId: this.userId,
-      ...context 
+      ...context
     };
 
     this.eventQueue.push(payload);
     this.metrics.totalEventsCaptured++;
     console.debug(`[SDK] Event queued. Current buffer size: ${this.eventQueue.length}`);
-    
+
     // Fallback: If queue gets dangerously large (e.g., 50), flush immediately
     if (this.eventQueue.length >= 50) this.flush();
   }
 
   async flush(isUnloading = false) {
     if (this.eventQueue.length === 0 || this.isFlushing) return;
-    
+
     this.isFlushing = true;
     const batch = [...this.eventQueue];
     this.eventQueue = []; // Clear queue
@@ -136,7 +136,7 @@ class FinSparkTelemetry {
     } catch (err) {
       console.error("[SDK] Failed to flush events, putting them back in queue", err);
       // Put them back at the start of the queue on failure
-      this.eventQueue = [...batch, ...this.eventQueue]; 
+      this.eventQueue = [...batch, ...this.eventQueue];
     } finally {
       this.isFlushing = false;
     }
@@ -150,7 +150,7 @@ class FinSparkTelemetry {
     }
     // Handle initial state gracefully
     if (this.metrics.totalEventsCaptured === 0 && this.metrics.totalNetworkCalls === 0) {
-       reduction = 84; 
+      reduction = 84;
     }
     return {
       overheadMs: this.metrics.lastOverheadMs.toFixed(2),
@@ -161,4 +161,7 @@ class FinSparkTelemetry {
   }
 }
 
-export const telemetry = new FinSparkTelemetry();
+// VITE HMR FIX: Ensure only ONE instance is ever created so duplicate 'click' listeners don't spam the Network tab!
+const globalTelemetry = window.__finspark_telemetry_singleton || new FinSparkTelemetry();
+window.__finspark_telemetry_singleton = globalTelemetry;
+export const telemetry = globalTelemetry;
