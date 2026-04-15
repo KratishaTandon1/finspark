@@ -5,6 +5,7 @@ import { LayoutDashboard, Shield, BarChart3, Settings, Database, Building, LogOu
 import DashboardOverview from './pages/DashboardOverview';
 import ComplianceHub     from './pages/ComplianceHub';
 import FeatureTracker    from './pages/FeatureTracker';
+import SystemSettings    from './pages/SystemSettings';
 import ComingSoon        from './pages/ComingSoon';
 import Login             from './pages/Login';
 import { telemetry }     from './sdk/finspark-telemetry';
@@ -251,7 +252,7 @@ function App() {
               isAdmin ? <ComplianceHub tenantId={activeTenant} /> : <Navigate to="/overview" replace />
             } />
             <Route path="/settings" element={
-              isAdmin ? <ComingSoon title="System Settings" description="General system configuration options for managing Enterprise SSO, Roles, and License boundaries." /> : <Navigate to="/overview" replace />
+              isAdmin ? <SystemSettings tenantId={activeTenant} /> : <Navigate to="/overview" replace />
             } />
             
             {/* Fallbacks */}
