@@ -1,0 +1,55 @@
+{
+  "TENANT_HDFC": [
+    "ApplyLoan",
+    "KYC_Upload",
+    "CreditScoreCheck",
+    "LoanDisbursement",
+    "RepaymentTracker",
+    "DocumentUpload",
+    "FraudAlerts",
+    "AuditExport",
+    "CoreBankingAPI",
+    "EStatements",
+    "BulkDisbursement",
+    "CollectionModule",
+    "Legacy_SOAP_API",
+    "Predictive_AI_Beta"
+  ],
+  "TENANT_ICICI": [
+    "RetailBanking",
+    "WealthDashboard",
+    "TransactionSearch",
+    "PortfolioRefresh",
+    "ExportPDF",
+    "FundTransfer",
+    "LoanEligibility",
+    "CreditCardApply",
+    "InsuranceModule",
+    "ForexModule",
+    "Custom_Report_Builder_V1"
+  ],
+  "TENANT_AMAZON": [
+    "AddToCart",
+    "ViewProduct",
+    "Checkout",
+    "ApplyCoupon",
+    "TrackOrder",
+    "ReviewProduct"
+  ],
+  "TENANT_UBER": [
+    "RequestRide",
+    "CancelRide",
+    "RateDriver",
+    "UpdatePayment",
+    "CheckFare",
+    "UpdateProfile",
+    "Advanced_Analytics"
+  ],
+  "TENANT_AIRBNB": [
+    "BookStay",
+    "SearchLocation",
+    "MessageHost",
+    "ViewWishlist",
+    "Host_API_Access"
+  ]
+}

@@ -11,17 +11,20 @@
     const PORT = process.env.PORT || 3001;
 
     // ─── File Paths ───────────────────────────────────────────────────────────────
-    const rawEventsPath = path.join(__dirname, '..', 'mock_raw_events.json');
+    const rawEventsPath = path.join(__dirname, '..', 'mock_rawEvents.json'); // Note: if the real filename is mock_raw_events.json we should use that
+    const actualRawEventsPath = path.join(__dirname, '..', 'mock_raw_events.json');
     const mockDataPath = path.join(__dirname, '..', 'mock_api_responses.json');
+    const licensePath = path.join(__dirname, '..', 'mock_tenant_licenses.json');
 
     // ─── Global State & Cache ─────────────────────────────────────────────────────
     let rawEvents = [];
     let mockData = {};
     let tenantCache = {}; // Quick access to events by tenantId
+    let tenantLicenses = {}; // Dynamic master ledger of what features a tenant owns
 
     function loadFiles() {
       try {
-        const rawEventsData = JSON.parse(fs.readFileSync(rawEventsPath, 'utf8'));
+        const rawEventsData = JSON.parse(fs.readFileSync(actualRawEventsPath, 'utf8'));
         rawEvents = Array.isArray(rawEventsData) ? rawEventsData : (rawEventsData.events || []);
 
         // BUILD TENANT CACHE (Dynamic extraction of all tenants and features)
@@ -48,12 +51,20 @@
       } catch (e) {
         console.error('[BOOT] Could not load mock_api_responses.json:', e.message);
       }
+
+      try {
+        const licenseData = JSON.parse(fs.readFileSync(licensePath, 'utf8'));
+        tenantLicenses = licenseData;
+        console.log('[BOOT] Loaded mock_tenant_licenses.json (dynamic ledger).');
+      } catch (e) {
+        console.error('[BOOT] Could not load mock_tenant_licenses.json:', e.message);
+      }
     }
 
     loadFiles();
 
     // ─── Hot Reload ───────────────────────────────────────────────────────────────
-    [rawEventsPath, mockDataPath].forEach(filePath => {
+    [actualRawEventsPath, mockDataPath, licensePath].forEach(filePath => {
       fs.watchFile(filePath, { interval: 1000 }, (curr, prev) => {
         if (curr.mtime > prev.mtime) {
           console.log(`\n[HOT-RELOAD] Detected change in ${path.basename(filePath)}, reloading...`);
@@ -68,7 +79,8 @@
     }
 
     function getFeaturesForTenant(tenantId) {
-      return Array.from(tenantCache[tenantId]?.features || []);
+      // Return dynamically generated master ledger instead of hardcoding values
+      return tenantLicenses[tenantId] || [];
     }
 
     function calculateKPIs(events, tenantId) {
@@ -169,42 +181,50 @@
 
     // DYNAMIC LICENSE GAP
     function calculateLicenseGap(tenantId, events) {
-      // Aggregate events by feature
       const featureCounts = {};
-      let totalEventVolume = 0;
-      
       events.forEach(e => {
         if (e.featureId) {
           const fId = e.featureId.replace(/([A-Z])/g, ' $1').trim();
           featureCounts[fId] = (featureCounts[fId] || 0) + 1;
-          totalEventVolume++;
         }
       });
 
-      // Sort features by total usage (ascending) to find the least used ones
-      // Threshold-based: only flag features genuinely below minimum usage
-      // Dynamically set threshold as 10% of the average feature usage
+      // Instead of hardcoding, look up the master license data dynamically!
+      const licensedFeaturesRaw = tenantLicenses[tenantId] || [];
+      const licensedFeatures = licensedFeaturesRaw.map(f => f.replace(/([A-Z])/g, ' $1').trim());
+      
+      // Inject missing licensed features as 0 dynamically
+      licensedFeatures.forEach(lf => {
+        if (featureCounts[lf] === undefined) {
+           featureCounts[lf] = 0;
+        }
+      });
+
       const featureValues = Object.values(featureCounts);
-      const totalFeaturesUsed = featureValues.length;
-      const avgUsage = featureValues.reduce((a, b) => a + b, 0) / totalFeaturesUsed;
-      const threshold = Math.max(50, Math.floor(avgUsage * 0.1));
+      const totalFeaturesLicensed = featureValues.length;
+      
+      // Calculate realistic threshold for "under-utilized" (e.g. bottom 20% of average)
+      const avgUsage = featureValues.reduce((a, b) => a + b, 0) / totalFeaturesLicensed;
+      const threshold = Math.max(100, Math.floor(avgUsage * 0.2));
 
       const allSorted = Object.entries(featureCounts).sort((a, b) => a[1] - b[1]);
+      
+      // Unused = 0 events. Cold = under threshold
+      const absolutelyUnused = allSorted.filter(([, count]) => count === 0);
       const underUtilizedFeatures = allSorted.filter(([, count]) => count < threshold);
       const underUtilizedCount = underUtilizedFeatures.length;
 
+      const totalUsedCount = totalFeaturesLicensed - underUtilizedCount;
       const costPerFeature = 12500;
 
       return {
-        totalLicensed: totalFeaturesUsed,
-        totalUsed: totalFeaturesUsed - underUtilizedCount,
+        totalLicensed: totalFeaturesLicensed,
+        totalUsed: totalUsedCount,
         unusedCount: underUtilizedCount,
-        usedFeatures: Object.keys(featureCounts),
+        usedFeatures: Object.keys(featureCounts).filter(k => featureCounts[k] >= threshold),
         unusedFeatures: underUtilizedFeatures.map(f => `${f[0]} (${f[1]} events)`),
-        utilizationPercent: underUtilizedCount === 0
-          ? 100
-          : Math.round(((totalFeaturesUsed - underUtilizedCount) / totalFeaturesUsed) * 100),
-        wastedSpend: underUtilizedCount * costPerFeature
+        utilizationPercent: Math.round((totalUsedCount / totalFeaturesLicensed) * 100),
+        wastedSpend: absolutelyUnused.length * costPerFeature // Compute waste just on absolutely unused
       };
     }
 
@@ -302,13 +322,20 @@
       });
 
       const features = licensed.map(featureId => {
-        const data = featureMap[featureId];
+        const data = featureMap[featureId] || { totalEvents: 0, users: new Set(), channels: {}, deployments: {} };
+        const total = data.totalEvents;
+        
+        let status;
+        if (total === 0) status = 'unused';
+        else if (total < 500) status = 'cold';
+        else if (total < 2500) status = 'warm';
+        else status = 'hot';
+
         return {
-          featureId,
-          // Dynamic status based on the 1.5L events scale
-          status: data.totalEvents > 4000 ? 'hot' : data.totalEvents > 1500 ? 'warm' : 'cold',
-          totalEvents: data.totalEvents,
-          uniqueUsers: data.users.size,
+          featureId: featureId.replace(/([A-Z])/g, ' $1').trim(),
+          status: status,
+          totalEvents: total,
+          uniqueUsers: data.users ? data.users.size : 0,
           channels: data.channels,
           deployments: data.deployments
         };
@@ -324,9 +351,12 @@
     app.post('/api/telemetry', requireTenant, (req, res) => {
       const events = req.body.events || [];
       const maskedEvents = applyPIIMasking(events, req.tenantId);
-      console.log(`\n[TELEMETRY] 📥 Received sync from tenant: ${req.tenantId}`);
-      if (maskedEvents.length > 0) {
-        console.log(`[PII-AUDIT] Active Masking Applied. Sample Event:`, JSON.stringify(maskedEvents[0], null, 2));
+  
+      const deploymentType = req.headers['x-deployment-type'] || 'unknown';
+      console.log(`\n[TELEMETRY SYNC - ${deploymentType.toUpperCase()}] Received aggregated batch of ${events.length} events from Tenant: ${req.tenantId}`);
+      if (events.length > 0) {
+        console.log(`Example Unmasked Ingestion: `, JSON.stringify(events[0]).substring(0, 150) + "...");
+        console.log(`Stored Masked Result:     `, JSON.stringify(maskedEvents[0]).substring(0, 150) + "...");
       }
       res.status(200).json({ status: 'success' });
     });
@@ -344,5 +374,5 @@
     // ─── Start ────────────────────────────────────────────────────────────────────
     app.listen(PORT, () => {
       console.log(`\n🚀 FinSpark Engine running on http://localhost:${PORT}`);
-      console.log(`Dynamic Mode: Monitoring ${rawEventsPath} for changes...`);
+      console.log(`Dynamic Mode: Monitoring mock database events for changes...`);
     });

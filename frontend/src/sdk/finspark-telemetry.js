@@ -1,8 +1,9 @@
 class FinSparkTelemetry {
   constructor() {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-    this.endpoint = `${API_BASE_URL}/api/ingest`;
-    this.deploymentType = "on-premise"; // Simulating on-prem behavior with local sync
+    this.endpoint = `${API_BASE_URL}/api/telemetry`;
+    // Check localStorage or default to on-premise
+    this.deploymentType = localStorage.getItem('finspark_deployment_type') || "on-premise";
     // Default tenant; we will allow the UI to override this for presentation purposes
     this.tenantId = localStorage.getItem('finspark_tenant_id') || "TENANT_HDFC";
 
@@ -47,6 +48,16 @@ class FinSparkTelemetry {
     console.log(`[SDK] active context switched to tenant: ${tenantId}`);
   }
 
+  setDeploymentType(type) {
+    this.deploymentType = type;
+    localStorage.setItem('finspark_deployment_type', type);
+    console.log(`[SDK] active deployment mode switched to: ${type}`);
+    // If we switch to cloud, immediately flush any lingering on-prem batches
+    if (type === 'cloud') {
+        this.flush();
+    }
+  }
+
   setConsent(value) {
     this.consentReceived = value;
     if (!value) {
@@ -59,25 +70,24 @@ class FinSparkTelemetry {
     const t0 = performance.now();
 
     // We now look for a taxonomy-structured data-feature attribute
-    // Example: "Dashboard:Navigation:Overview"
-    const featureTaxonomy = e.target.closest('[data-feature]')?.getAttribute('data-feature');
-    if (featureTaxonomy) {
-      const parts = featureTaxonomy.split(':');
+    // If not found, we fallback to a generic tag so demo clicks always register!
+    const featureTaxonomy = e.target.closest('[data-feature]')?.getAttribute('data-feature') || "Generic:Page:Click";
+    
+    const parts = featureTaxonomy.split(':');
 
-      this.track("Feature_Interaction", {
-        taxonomyString: featureTaxonomy,
-        module: parts[0] || "Unknown",
-        subModule: parts[1] || "Unknown",
-        action: parts[2] || "Unknown",
-        elementType: e.target.tagName,
+    this.track("Feature_Interaction", {
+      taxonomyString: featureTaxonomy,
+      module: parts[0] || "Unknown",
+      subModule: parts[1] || "Unknown",
+      action: parts[2] || "Unknown",
+      elementType: e.target.tagName,
 
-        // Mocking PII
-        customerName: "Sanjay Kumar",
-        accountNumber: "000088884444",
-        emailAddress: "sanjay.k@hdfc-mock.com",
-        ipAddress: "10.0.5.212"
-      });
-    }
+      // Mocking PII
+      customerName: "Sanjay Kumar",
+      accountNumber: "000088884444",
+      emailAddress: "sanjay.k@hdfc-mock.com",
+      ipAddress: "10.0.5.212"
+    });
     const t1 = performance.now();
     // Simulate slight fluctuation between 0.8 and 2.1 ms overhead if too fast
     let actualOverhead = t1 - t0;
@@ -97,12 +107,41 @@ class FinSparkTelemetry {
       ...context
     };
 
+    // CLOUD MODE: Send immediately (Centralized Analytics Engine)
+    if (this.deploymentType === 'cloud') {
+       console.debug(`[SDK - CLOUD MODE] Forwarding immediately to Centralized Engine...`);
+       this._sendRaw([payload]);
+       this.metrics.totalEventsCaptured++;
+       return;
+    }
+
+    // ON-PREMISE MODE: Batch via Circuit-Breaker (Federated Aggregation)
     this.eventQueue.push(payload);
     this.metrics.totalEventsCaptured++;
-    console.debug(`[SDK] Event queued. Current buffer size: ${this.eventQueue.length}`);
+    console.debug(`[SDK - ON-PREM] Event queued in Local Memory. Current buffer size: ${this.eventQueue.length}`);
 
     // Fallback: If queue gets dangerously large (e.g., 50), flush immediately
     if (this.eventQueue.length >= 50) this.flush();
+  }
+
+  async _sendRaw(batch) {
+      const headers = {
+        "Content-Type": "application/json",
+        "x-tenant-id": this.tenantId,
+        "x-deployment-type": this.deploymentType
+      };
+      
+      try {
+        await fetch(this.endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ events: batch })
+        });
+        this.metrics.totalNetworkCalls++;
+      } catch (err) {
+        console.error("[SDK] Network Error sending data", err);
+        throw err;
+      }
   }
 
   async flush(isUnloading = false) {
@@ -113,25 +152,15 @@ class FinSparkTelemetry {
     this.eventQueue = []; // Clear queue
 
     console.log(`[SDK] Syncing bulk data gravity event: Flushing ${batch.length} events to Central Engine...`);
-    this.metrics.totalNetworkCalls++;
-
-    const headers = {
-      "Content-Type": "application/json",
-      "x-tenant-id": this.tenantId, // DB Level Isolation enforcement
-      "x-deployment-type": this.deploymentType
-    };
 
     try {
       if (isUnloading && navigator.sendBeacon) {
         // Use sendBeacon for clean exit delivery
         const blob = new Blob([JSON.stringify({ events: batch })], { type: 'application/json' });
         navigator.sendBeacon(this.endpoint, blob);
+        this.metrics.totalNetworkCalls++;
       } else {
-        await fetch(this.endpoint, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ events: batch })
-        });
+        await this._sendRaw(batch);
       }
     } catch (err) {
       console.error("[SDK] Failed to flush events, putting them back in queue", err);

@@ -12,8 +12,8 @@ import { telemetry }     from './sdk/finspark-telemetry';
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   
-  // Set default active tenant. Real value will be from user or telemetry
   const [activeTenant, setActiveTenant] = useState(telemetry?.tenantId || 'TENANT_HDFC');
+  const [deploymentType, setDeploymentType] = useState(telemetry?.deploymentType || 'on-premise');
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [availableTenants, setAvailableTenants] = useState([]);
@@ -57,6 +57,12 @@ function App() {
     const newTenantId = e.target.value;
     telemetry.setTenant(newTenantId);
     setActiveTenant(newTenantId);
+  };
+
+  const handleDeploymentSwitch = (e) => {
+    const newType = e.target.value;
+    telemetry.setDeploymentType(newType);
+    setDeploymentType(newType);
   };
 
   if (!currentUser) {
@@ -161,6 +167,23 @@ function App() {
                   Tenant Admin — view locked to your organisation
                 </p>
               )}
+            </div>
+
+            {/* ── Deployment selector ──────────────────────────────────────────── */}
+            <div className="mb-2 px-1">
+              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                Deployment Model
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px' }}>
+                <select 
+                  value={deploymentType} 
+                  onChange={handleDeploymentSwitch}
+                  style={{ background: 'transparent', color: 'var(--text-main)', border: 'none', outline: 'none', width: '100%', cursor: 'pointer', fontSize: '0.875rem' }}
+                >
+                  <option value="cloud" style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>Cloud (Centralized Sync)</option>
+                  <option value="on-premise" style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>On-Premise (Batch Sync)</option>
+                </select>
+              </div>
             </div>
 
             {/* ── Nav links ────────────────────────────────────────────────────── */}
